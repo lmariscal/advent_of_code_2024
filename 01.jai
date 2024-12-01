@@ -4,6 +4,9 @@
 #import "String";
 #import "Math";
 #import "Hash_Table";
+#import "File_Utilities";
+
+#load "utils.jai";
 
 EXAMPLE_INPUT :: #string DONE
 3   4
@@ -17,14 +20,15 @@ DONE
 EXAMPLE_ANSWER_FIRST :: 11;
 EXAMPLE_ANSWER_SECOND :: 31;
 
+INPUT_FILE :: "./inputs/01.txt";
+
 first_star :: (left_list: []s64, right_list: []s64) -> total: s64 {
     assert(left_list.count == right_list.count, "Lists must have the same length");
 
     total := 0;
-    for 0..left_list.count - 1 {
-        left := left_list[it];
-        right := right_list[it];
-        dist := abs(right - left);
+    for left_list {
+        right := right_list[it_index];
+        dist := abs(right - it);
         total += dist;
     }
 
@@ -45,30 +49,12 @@ second_star :: (left_list: []s64, right_list: []s64) -> total: s64 {
 
     total := 0;
     for left_list {
-        item := 0;
         count := table_find_pointer(*table, it);
-        if count != null  item = it * count.*;
-        total += item;
+        if count == null  continue;
+        total += it * count.*;
     }
 
     return total;
-}
-
-next_token :: (str: string, cursor: *s64) -> token: string {
-    SEPARATORS :: u8.[#char " ", #char "\t", #char "\n", #char "\r"];
-    result: string = .{ data = str.data + cursor.*, count = 0 };
-    if cursor.* >= str.count return result;
-
-    while cursor.* < str.count {
-        if array_find(SEPARATORS, str[cursor.*]) {
-            result.count = cursor.* - (result.data - str.data);
-            while cursor.* < str.count - 1 && array_find(SEPARATORS, str[cursor.*]) cursor.* += 1;
-            break;
-        }
-        cursor.* += 1;
-    }
-
-    return result;
 }
 
 parse_input :: (input: string) -> left_list: []s64, right_list: []s64 {
@@ -106,8 +92,12 @@ validate_example :: () {
 
 main :: () {
     validate_example();
+    if !file_exists(INPUT_FILE) {
+        print("Input file for day 01 not found: '%'\n", INPUT_FILE);
+        return;
+    }
 
-    input := read_entire_file("./inputs/01.txt");
+    input := read_entire_file(INPUT_FILE);
     left_list, right_list := parse_input(input);
     defer array_free(left_list);
     defer array_free(right_list);
